@@ -49,7 +49,10 @@ def detect_single_xor(data):
             count = 0
             for j in range(0, len(s), 2):
                 c1 = int(s[j], 16)
-                c2 = int(s[j+1], 16)
+                if(j+1 >= len(s)):
+                    c2 = 0
+                else:
+                    c2 = int(s[j+1], 16)
                 c = c1*16 + c2
                 c = c^i
                 ht += hexkey[c//16] + hexkey[c%16]
