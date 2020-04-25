@@ -133,3 +133,7 @@ tags
 .vim
 
 # End of https://www.gitignore.io/api/vim,python
+
+repeat.py
+detect.py
+base64_to_hex.py
