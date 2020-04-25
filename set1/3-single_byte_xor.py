@@ -38,25 +38,28 @@ def score(s):
         if c in freqs:
             score += freqs[c]
     return score
+    
+def single_byte_xor(s):
+    hexkey = "0123456789abcdef"
+    res = ""
+    mx = 0
+    for i in range (256):
+        ht = ""
+        count = 0
+        for j in range(0, len(s), 2):
+            c1 = int(s[j], 16)
+            c2 = int(s[j+1], 16)
+            c = c1*16 + c2
+            c = c^i
+            ht += hexkey[c//16] + hexkey[c%16]
+        ht = binascii.unhexlify(ht)
+        if(score(ht) > mx):
+            mx = score(ht)
+            res = ht
+    return res
 
-hexkey = "0123456789abcdef"
-s = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
-res = ""
-mx = 0
-for i in range (256):
-    ht = ""
-    count = 0
-    for j in range(0, len(s), 2):
-        c1 = int(s[j], 16)
-        c2 = int(s[j+1], 16)
-        c = c1*16 + c2
-        c = c^i
-        ht += hexkey[c//16] + hexkey[c%16]
-    ht = binascii.unhexlify(ht)
-    if(score(ht) > mx):
-        mx = score(ht)
-        res = ht
-print (res)
-
-
+if __name__ == '__main__':
+    
+    s = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
+    print (single_byte_xor(s))
 # i = 88, Cooking MC's like a pound of bacon    

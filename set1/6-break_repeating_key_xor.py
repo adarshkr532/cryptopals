@@ -29,7 +29,7 @@ def get_keysize(data):
     l.sort()
     return l[:3]
 
-def get_key(data, keysize):
+def get_key(data, keysize):           #keysize is in bytes
     block = [""]*int(keysize)
     for i in range(len(data)):
         block[i%keysize] += data[i]
