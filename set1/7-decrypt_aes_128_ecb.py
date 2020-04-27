@@ -32,13 +32,31 @@ def invShiftRows(state):
             state[i] = state[i][3:] + state[i][:3]
     return state
 
+def gfmul2(a):                  # Multiply by 2 in Galois Field
+    res = (a << 1)
+    res = (res & 255)
+    if(a & 128):
+        res = (res ^ 27)
+    return res
+
+def fieldMultiply(a, b):        # Multiply two numbers in Galois Field
+    res = 0
+    while(b > 0):
+        if(b&1):
+            res = (res ^ a)
+        a = gfmul2(a)
+        b = b//2
+        print(a, b, res)
+    return res
+
+
 def invMixColumns(state):
     mat = [[14, 11, 13, 9], [9, 14, 11, 13], [13, 9, 14, 11], [11, 13, 9, 14]]
     newState = [[0 for i in range(4)] for i in range(4)]
     for i in range(4):
         for j in range(4):
             for k in range(4):
-                newState[i][j] = newState[i][j] ^ (mat[i][k] * state[k][j])
+                newState[i][j] = newState[i][j] ^ fieldMultiply(state[k][j], mat[i][k])
     return newState
 
 #def decrypt_aes(s):
@@ -51,12 +69,13 @@ if __name__ == '__main__':
     
     data = base64_to_hex(data)
 
-    state = get_statearray("29C3505F571420F6402299B31A02D73A")
+    state = get_statearray("8E4DA1BC9FDC589DD5D5D7D64D7EBDF8")
     
     for i in state:
         for j in i:
             print(hex(j), end = ' ')
         print('\n')
+
     state = invMixColumns(state)
     for i in state:
         for j in i:
