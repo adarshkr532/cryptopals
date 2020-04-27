@@ -122,10 +122,9 @@ def invStateArray(state):
             res.append(state[j][i])
     res = binascii.hexlify(bytearray(res))
     res = str(res, 'ascii')
-
     return res
 
-def decryptAES128ECB(data, key):
+def decrypt16bytes(data, key):
 
     data = getStateArray(data)
 
@@ -147,23 +146,29 @@ def decryptAES128ECB(data, key):
 
     return data
 
+def decryptAES128ECB(cipher, key):
+
+    genTable()
+    
+    ciphertext = base64_to_hex(cipher)
+
+    genAllKeys(key)
+
+    message = ""
+
+    for i in range(0, len(ciphertext), 32):
+        cipher = ciphertext[i:i+32]
+        text = decrypt16bytes(cipher, key)
+        text = (binascii.unhexlify(text))
+        message += str(text, 'ascii')
+
+    return message
+
 if __name__ == '__main__':
     
     with open('7.txt', 'r') as file:
         ciphertext = file.read().replace('\n','')  
    
-    genTable()
-    
-    ciphertext = base64_to_hex(ciphertext)
-    key = "YELLOW SUBMARINE"
-    genAllKeys(key)
-
-    plaintext = ""
-
-    for i in range(0, len(ciphertext), 32):
-        cipher = ciphertext[i:i+32]
-        plaintext = decryptAES128ECB(cipher, key)
-        plaintext = (binascii.unhexlify(plaintext))
-        print(str(plaintext, 'ascii'), end='')
+    print(decryptAES128ECB(ciphertext, "YELLOW SUBMARINE"))
 
 
