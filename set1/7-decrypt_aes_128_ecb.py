@@ -2,6 +2,7 @@
 # http://www.cs.columbia.edu/~sedwards/classes/2008/4840/reports/AES.pdf
 # https://kavaliro.com/wp-content/uploads/2014/03/AES.pdf
 
+import binascii
 from base64_to_hex import base64_to_hex
 from BitVector import *
 
@@ -114,36 +115,55 @@ def invSubBytes(state):
             state[i][j] = invSBox[state[i][j]]
     return state
 
+def invStateArray(state):
+    res = []
+    for i in range(4):
+        for j in range(4):
+            res.append(state[j][i])
+    res = binascii.hexlify(bytearray(res))
+    res = str(res, 'ascii')
+
+    return res
+
 def decryptAES128ECB(data, key):
-    genAllKeys(key)
+
+    data = getStateArray(data)
 
     # Inverse Round 10
     data = invRoundKey(data, 40)
     data = invShiftRows(data)
     data = invSubBytes(data)
    
-    printState(data)
-    # Inverse Round 1-9
+    # Inverse Round 9-1
     for i in range(9, 0, -1):
         data = invRoundKey(data, i*4)
         data = invMixColumns(data)
         data = invShiftRows(data)
         data = invSubBytes(data)
-
+    
+    # Inverse Round 0
     data = invRoundKey(data, 0)
+    data = invStateArray(data)
+
     return data
 
 if __name__ == '__main__':
     
     with open('7.txt', 'r') as file:
-        data = file.read().replace('\n','')
-    
-    data = base64_to_hex(data)
-
+        ciphertext = file.read().replace('\n','')  
    
     genTable()
     
-    ciphertext = getStateArray("29C3505F571420F6402299B31A02D73A")
-    key = "Thats my Kung Fu"
+    ciphertext = base64_to_hex(ciphertext)
+    key = "YELLOW SUBMARINE"
+    genAllKeys(key)
 
-    decryptAES128ECB(ciphertext, key)
+    plaintext = ""
+
+    for i in range(0, len(ciphertext), 32):
+        cipher = ciphertext[i:i+32]
+        plaintext = decryptAES128ECB(cipher, key)
+        plaintext = (binascii.unhexlify(plaintext))
+        print(str(plaintext, 'ascii'), end='')
+
+
