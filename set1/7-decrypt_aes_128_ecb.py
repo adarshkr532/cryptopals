@@ -1,5 +1,6 @@
 # https://engineering.purdue.edu/kak/compsec/NewLectures/Lecture8.pdf
-
+# http://www.cs.columbia.edu/~sedwards/classes/2008/4840/reports/AES.pdf
+# https://kavaliro.com/wp-content/uploads/2014/03/AES.pdf
 
 from base64_to_hex import base64_to_hex
 from BitVector import *
@@ -50,7 +51,6 @@ def fieldMultiply(a, b):        # Multiply two numbers in Galois Field
             res = (res ^ a)
         a = gfmul2(a)
         b = b//2
-        print(a, b, res)
     return res
 
 def rangeXor(a, b):
@@ -58,6 +58,12 @@ def rangeXor(a, b):
     for i in range(4):
         c[i] = (a[i] ^ b[i])
     return c
+
+def printState(state):
+    for i in range(4):
+        for j in range(4):
+            print(hex(state[i][j]), end=' ')
+        print('\n')
 
 def genRoundKeys(id):
     ckey = rKey[id+3]
@@ -96,9 +102,36 @@ def invMixColumns(state):
                 newState[i][j] = newState[i][j] ^ fieldMultiply(state[k][j], mat[i][k])
     return newState
 
-#def decryptAes128ECB(s, key):
-    
+def invRoundKey(state, id):
+    for i in range(4):
+        for j in range(4):
+            state[j][i] = (state[j][i] ^ rKey[id+i][j])
+    return state
 
+def invSubBytes(state):
+    for i in range(4):
+        for j in range(4):
+            state[i][j] = invSBox[state[i][j]]
+    return state
+
+def decryptAES128ECB(data, key):
+    genAllKeys(key)
+
+    # Inverse Round 10
+    data = invRoundKey(data, 40)
+    data = invShiftRows(data)
+    data = invSubBytes(data)
+   
+    printState(data)
+    # Inverse Round 1-9
+    for i in range(9, 0, -1):
+        data = invRoundKey(data, i*4)
+        data = invMixColumns(data)
+        data = invShiftRows(data)
+        data = invSubBytes(data)
+
+    data = invRoundKey(data, 0)
+    return data
 
 if __name__ == '__main__':
     
@@ -107,14 +140,10 @@ if __name__ == '__main__':
     
     data = base64_to_hex(data)
 
-    state = getStateArray("8E4DA1BC9FDC589DD5D5D7D64D7EBDF8")
    
     genTable()
-
+    
+    ciphertext = getStateArray("29C3505F571420F6402299B31A02D73A")
     key = "Thats my Kung Fu"
-    genAllKeys(key)
-    for i in rKey:
-        for j in i:
-            print (hex(j), end=' ')
-        print('\n')
-    print(len(rKey))
+
+    decryptAES128ECB(ciphertext, key)
